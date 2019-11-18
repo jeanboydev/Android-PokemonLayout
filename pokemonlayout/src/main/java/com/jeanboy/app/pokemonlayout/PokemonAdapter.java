@@ -1,7 +1,6 @@
 package com.jeanboy.app.pokemonlayout;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -10,10 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jeanboy.app.pokemonlayout.base.BaseViewHolder;
-import com.jeanboy.app.pokemonlayout.base.OnLoadMoreListener;
-import com.jeanboy.app.pokemonlayout.base.OnRefreshListener;
 import com.jeanboy.app.pokemonlayout.base.RecyclerViewBaseAdapter;
-import com.jeanboy.app.pokemonlayout.base.ViewConstants;
+import com.jeanboy.app.pokemonlayout.constants.ViewState;
+import com.jeanboy.app.pokemonlayout.constants.ViewType;
+import com.jeanboy.app.pokemonlayout.listener.OnLoadMoreListener;
+import com.jeanboy.app.pokemonlayout.listener.OnRefreshListener;
 
 import java.util.List;
 
@@ -34,11 +34,11 @@ public abstract class PokemonAdapter<T> extends RecyclerViewBaseAdapter<T> {
     @Override
     public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         switch (viewType) {
-            case ViewConstants.TYPE_HEADER:
+            case ViewType.TYPE_HEADER:
                 return new BaseViewHolder(getLayoutView(parent, getHeaderLayout()));
-            case ViewConstants.TYPE_FOOTER:
+            case ViewType.TYPE_FOOTER:
                 return new BaseViewHolder(getLayoutView(parent, getFooterLayout()));
-            case ViewConstants.TYPE_MASK:
+            case ViewType.TYPE_MASK:
                 return new BaseViewHolder(getLayoutView(parent, getMaskLayout()));
             default:
                 return super.onCreateViewHolder(parent, viewType);
@@ -49,13 +49,13 @@ public abstract class PokemonAdapter<T> extends RecyclerViewBaseAdapter<T> {
     public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
         int viewType = getItemViewType(position);
         switch (viewType) {
-            case ViewConstants.TYPE_HEADER:
+            case ViewType.TYPE_HEADER:
                 convertHeader(holder);
                 break;
-            case ViewConstants.TYPE_FOOTER:
+            case ViewType.TYPE_FOOTER:
                 convertFooter(holder, currentState);
                 break;
-            case ViewConstants.TYPE_MASK:
+            case ViewType.TYPE_MASK:
                 convertMask(holder, currentState);
                 break;
             default:
@@ -66,17 +66,17 @@ public abstract class PokemonAdapter<T> extends RecyclerViewBaseAdapter<T> {
     @Override
     public int getItemViewType(int position) {
         if (super.getItemCount() == 0 && getViewCount(getMaskLayout()) > 0) {
-            return ViewConstants.TYPE_MASK;
+            return ViewType.TYPE_MASK;
         }
 
         int headerCount = getViewCount(getHeaderLayout());
         if (headerCount > 0 && position < headerCount) {
-            return ViewConstants.TYPE_HEADER;
+            return ViewType.TYPE_HEADER;
         }
 
         int footerCount = getViewCount(getFooterLayout());
         if (footerCount > 0 && position >= footerCount + super.getItemCount()) {
-            return ViewConstants.TYPE_FOOTER;
+            return ViewType.TYPE_FOOTER;
         }
         return super.getItemViewType(position - headerCount);
     }
@@ -87,7 +87,7 @@ public abstract class PokemonAdapter<T> extends RecyclerViewBaseAdapter<T> {
             return getViewCount(getMaskLayout());
         }
 
-        if (super.getItemCount() > 0 && ViewConstants.STATE_EMPTY == currentState) {
+        if (super.getItemCount() > 0 && ViewState.STATE_COMPLETED == currentState) {
             return getViewCount(getHeaderLayout()) + super.getItemCount();
         } else {
             return getViewCount(getHeaderLayout()) + getViewCount(getFooterLayout()) + super.getItemCount();
@@ -120,40 +120,37 @@ public abstract class PokemonAdapter<T> extends RecyclerViewBaseAdapter<T> {
     public void convertMask(BaseViewHolder holder, int state) {
     }
 
-    public void setLoading(boolean isLoadMore) {
-        currentState = ViewConstants.STATE_LOADING;
-        if (!isLoadMore) {
-            dataList.clear();
+    public void setLoading() {
+        currentState = ViewState.STATE_LOADING;
+        notifyDataSetChanged();
+    }
+
+    public void setLoadError() {
+        currentState = ViewState.STATE_ERROR;
+        notifyDataSetChanged();
+    }
+
+    public void setLoadCompleted(boolean hasMore) {
+        if (super.getItemCount() == 0) {
+            currentState = hasMore ? ViewState.STATE_DATA : ViewState.STATE_EMPTY;
+        } else {
+            currentState = hasMore ? ViewState.STATE_DATA : ViewState.STATE_COMPLETED;
         }
         notifyDataSetChanged();
     }
 
-    public void setLoadError(boolean isLoadMore) {
-        currentState = ViewConstants.STATE_ERROR;
-        if (!isLoadMore) {
-            dataList.clear();
-        }
-        notifyDataSetChanged();
+    protected void convertFooterListener(@NonNull View view) {
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (onLoadMoreListener != null) {
+                    onLoadMoreListener.onLoadMore();
+                }
+            }
+        });
     }
 
-    public void setLoadEmpty(boolean isLoadMore) {
-        currentState = ViewConstants.STATE_EMPTY;
-        if (!isLoadMore) {
-            dataList.clear();
-        }
-        notifyDataSetChanged();
-    }
-
-    public void setLoadCompleted(boolean isLoadMore) {
-        currentState = ViewConstants.STATE_COMPLETED;
-        if (!isLoadMore) {
-            dataList.clear();
-        }
-        notifyDataSetChanged();
-    }
-
-
-    protected void convertListener(@NonNull View view) {
+    protected void convertMaskListener(@NonNull View view) {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -175,23 +172,32 @@ public abstract class PokemonAdapter<T> extends RecyclerViewBaseAdapter<T> {
     public void setOnLoadMoreListener(RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener) {
         this.onLoadMoreListener = onLoadMoreListener;
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            private static final int HEADER = -1;
+            private static final int BOTTOM = 1;
+            private int scrollState;
+
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                boolean isNotHeader = recyclerView.canScrollVertically(-1);
-                boolean isNotBottom = recyclerView.canScrollVertically(1);
-                Log.e(PokemonAdapter.class.getSimpleName(), "==isNotHeader==" + isNotHeader + "==isNotBottom==" + isNotBottom);
-                if (!isNotBottom) {
-                    Log.e(PokemonAdapter.class.getSimpleName(), "====load more===");
-                    if (onLoadMoreListener != null) {
-                        onLoadMoreListener.onLoadMore();
-                    }
-                }
+                scrollState = newState;
             }
 
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+                if (RecyclerView.SCROLL_STATE_IDLE == scrollState) {
+                    return;
+                }
+                if (ViewState.STATE_COMPLETED == currentState) {
+                    return;
+                }
+                if (recyclerView.canScrollVertically(BOTTOM)) {
+                    return;
+                }
+                if (onLoadMoreListener != null) {
+                    onLoadMoreListener.onLoadMore();
+                }
             }
         });
     }

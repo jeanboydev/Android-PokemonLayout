@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.jeanboy.app.pokemonlayout.base.OnLoadMoreListener;
-import com.jeanboy.app.pokemonlayout.base.OnRefreshListener;
+import com.jeanboy.app.pokemonlayout.listener.OnLoadMoreListener;
+import com.jeanboy.app.pokemonlayout.listener.OnRefreshListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,27 +61,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadData() {
-        testAdapter.setLoading(currentPage > 1);
+        testAdapter.setLoading();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 Log.e(MainActivity.class.getSimpleName(), "====currentPage======" + currentPage);
                 if (currentPage == 0) {
-                    testAdapter.setLoadEmpty(false);
+                    testAdapter.setLoadCompleted(false);
                 } else if (currentPage == 1) {
                     for (int i = 0; i < 20; i++) {
                         dataList.add("===" + i);
                     }
                     testAdapter.setLoadCompleted(true);
                 } else if (currentPage == 2) {
-                    testAdapter.setLoadError(true);
+                    testAdapter.setLoadError();
                 } else if (currentPage == 3) {
                     for (int i = 0; i < 5; i++) {
                         dataList.add("===" + i);
                     }
                     testAdapter.setLoadCompleted(true);
                 } else {
-                    testAdapter.setLoadEmpty(true);
+                    testAdapter.setLoadCompleted(false);
                 }
                 currentPage++;
             }
