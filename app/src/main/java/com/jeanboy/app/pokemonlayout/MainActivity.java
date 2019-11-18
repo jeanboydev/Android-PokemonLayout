@@ -1,15 +1,16 @@
 package com.jeanboy.app.pokemonlayout;
 
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.graphics.fonts.FontFamily;
-import android.os.Bundle;
-import android.os.Handler;
-
-import com.jeanboy.app.pokemonlayout.base.OnLoadListener;
+import com.jeanboy.app.pokemonlayout.base.OnLoadMoreListener;
+import com.jeanboy.app.pokemonlayout.base.OnRefreshListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +33,14 @@ public class MainActivity extends AppCompatActivity {
 
         rv_container = findViewById(R.id.rv_container);
         testAdapter = new TestAdapter(dataList);
-        testAdapter.setOnLoadListener(new OnLoadListener() {
+        testAdapter.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh() {
                 currentPage = 1;
                 refreshData();
             }
+        });
+        testAdapter.setOnLoadMoreListener(rv_container, new OnLoadMoreListener() {
 
             @Override
             public void onLoadMore() {
@@ -54,28 +57,31 @@ public class MainActivity extends AppCompatActivity {
 
     private void refreshData() {
 //        currentPage = 0;
-        testAdapter.setLoading(false);
         loadData();
     }
 
     private void loadData() {
+        testAdapter.setLoading(currentPage > 1);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                Log.e(MainActivity.class.getSimpleName(), "====currentPage======" + currentPage);
                 if (currentPage == 0) {
-                    testAdapter.setLoadCompleted(currentPage >= 1, true);
-//                } else if (currentPage == 1) {
-//                    for (int i = 0; i < 5; i++) {
-//                        dataList.add("===" + i);
-//                    }
-//                    testAdapter.setLoadCompleted(currentPage >= 1, false);
-                } else if (currentPage < 3) {
+                    testAdapter.setLoadEmpty(false);
+                } else if (currentPage == 1) {
                     for (int i = 0; i < 20; i++) {
                         dataList.add("===" + i);
                     }
-                    testAdapter.setLoadCompleted(currentPage >= 1, false);
+                    testAdapter.setLoadCompleted(true);
+                } else if (currentPage == 2) {
+                    testAdapter.setLoadError(true);
+                } else if (currentPage == 3) {
+                    for (int i = 0; i < 5; i++) {
+                        dataList.add("===" + i);
+                    }
+                    testAdapter.setLoadCompleted(true);
                 } else {
-                    testAdapter.setLoadCompleted(currentPage >= 1, true);
+                    testAdapter.setLoadEmpty(true);
                 }
                 currentPage++;
             }

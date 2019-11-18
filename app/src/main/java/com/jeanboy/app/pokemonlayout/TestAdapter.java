@@ -40,47 +40,52 @@ public class TestAdapter extends PokemonAdapter<String> {
 
     @Override
     public void convertFooter(BaseViewHolder holder, int state) {
-        Log.e(TestAdapter.class.getSimpleName(), "========convertFooter=========");
+        Log.e(TestAdapter.class.getSimpleName(), "========convertFooter========state=" + state);
         switch (state) {
             case ViewConstants.STATE_LOADING:
+                Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========STATE_LOADING=");
                 holder.setVisible(R.id.pb_progress, true);
                 holder.setVisible(R.id.iv_icon, false);
                 holder.setText(R.id.tv_text, "加载中...");
                 break;
             case ViewConstants.STATE_EMPTY:
+                Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========STATE_EMPTY=");
                 holder.setVisible(R.id.pb_progress, false);
                 holder.setVisible(R.id.iv_icon, true);
                 holder.setText(R.id.tv_text, "数据为空，点击重试");
                 break;
             case ViewConstants.STATE_ERROR:
-                holder.setVisible(R.id.pb_progress, true);
-                holder.setVisible(R.id.iv_icon, false);
+                Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========STATE_ERROR=");
+                holder.setVisible(R.id.pb_progress, false);
+                holder.setVisible(R.id.iv_icon, true);
                 holder.setText(R.id.tv_text, "加载失败，点击重试");
-                convertListener(holder.itemView, false);
                 break;
         }
     }
 
     @Override
     public void convertMask(BaseViewHolder holder, int state) {
-        Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========");
+        Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========state=" + state);
         switch (state) {
             case ViewConstants.STATE_LOADING:
+                Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========STATE_LOADING=");
                 holder.setVisible(R.id.pb_progress, true);
                 holder.setVisible(R.id.iv_icon, false);
                 holder.setText(R.id.tv_text, "加载中...");
                 break;
             case ViewConstants.STATE_EMPTY:
+                Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========STATE_EMPTY=");
                 holder.setVisible(R.id.pb_progress, false);
                 holder.setVisible(R.id.iv_icon, true);
                 holder.setText(R.id.tv_text, "数据为空，点击重试");
-                convertListener(holder.itemView, true);
+                convertListener(holder.itemView);
                 break;
             case ViewConstants.STATE_ERROR:
-                holder.setVisible(R.id.pb_progress, true);
-                holder.setVisible(R.id.iv_icon, false);
+                Log.e(TestAdapter.class.getSimpleName(), "========convertMask=========STATE_ERROR=");
+                holder.setVisible(R.id.pb_progress, false);
+                holder.setVisible(R.id.iv_icon, true);
                 holder.setText(R.id.tv_text, "加载失败，点击重试");
-                convertListener(holder.itemView, true);
+                convertListener(holder.itemView);
                 break;
         }
     }

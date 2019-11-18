@@ -5,9 +5,6 @@ package com.jeanboy.app.pokemonlayout.base;
  * @Author caojianbo
  * @Date 2019/11/18 14:58
  */
-public interface OnLoadListener {
-
+public interface OnRefreshListener {
     void onRefresh();
-
-    void onLoadMore();
 }

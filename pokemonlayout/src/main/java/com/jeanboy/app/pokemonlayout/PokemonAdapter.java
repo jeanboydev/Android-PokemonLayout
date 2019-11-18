@@ -1,14 +1,17 @@
 package com.jeanboy.app.pokemonlayout;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.jeanboy.app.pokemonlayout.base.BaseViewHolder;
-import com.jeanboy.app.pokemonlayout.base.OnLoadListener;
+import com.jeanboy.app.pokemonlayout.base.OnLoadMoreListener;
+import com.jeanboy.app.pokemonlayout.base.OnRefreshListener;
 import com.jeanboy.app.pokemonlayout.base.RecyclerViewBaseAdapter;
 import com.jeanboy.app.pokemonlayout.base.ViewConstants;
 
@@ -119,47 +122,77 @@ public abstract class PokemonAdapter<T> extends RecyclerViewBaseAdapter<T> {
 
     public void setLoading(boolean isLoadMore) {
         currentState = ViewConstants.STATE_LOADING;
-        updateItemSate(isLoadMore);
+        if (!isLoadMore) {
+            dataList.clear();
+        }
+        notifyDataSetChanged();
     }
 
     public void setLoadError(boolean isLoadMore) {
         currentState = ViewConstants.STATE_ERROR;
-        updateItemSate(isLoadMore);
-    }
-
-    public void setLoadCompleted(boolean isLoadMore, boolean isEmpty) {
-        currentState = isEmpty ? ViewConstants.STATE_EMPTY : ViewConstants.STATE_COMPLETED;
-        updateItemSate(isLoadMore);
-    }
-
-    private void updateItemSate(boolean isLoadMore) {
-        if (isLoadMore) {
-            notifyDataSetChanged();
-//            notifyItemChanged(getItemCount() - 1);
-        } else {
+        if (!isLoadMore) {
             dataList.clear();
-            notifyDataSetChanged();
         }
+        notifyDataSetChanged();
     }
 
-    protected void convertListener(@NonNull View view, final boolean isRefresh) {
+    public void setLoadEmpty(boolean isLoadMore) {
+        currentState = ViewConstants.STATE_EMPTY;
+        if (!isLoadMore) {
+            dataList.clear();
+        }
+        notifyDataSetChanged();
+    }
+
+    public void setLoadCompleted(boolean isLoadMore) {
+        currentState = ViewConstants.STATE_COMPLETED;
+        if (!isLoadMore) {
+            dataList.clear();
+        }
+        notifyDataSetChanged();
+    }
+
+
+    protected void convertListener(@NonNull View view) {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (onLoadListener != null) {
-                    if (isRefresh) {
-                        onLoadListener.onRefresh();
-                    } else {
-                        onLoadListener.onLoadMore();
-                    }
+                if (onRefreshListener != null) {
+                    onRefreshListener.onRefresh();
                 }
             }
         });
     }
 
-    private OnLoadListener onLoadListener;
+    private OnRefreshListener onRefreshListener;
 
-    public void setOnLoadListener(OnLoadListener onLoadListener) {
-        this.onLoadListener = onLoadListener;
+    public void setOnRefreshListener(OnRefreshListener onRefreshListener) {
+        this.onRefreshListener = onRefreshListener;
+    }
+
+    private OnLoadMoreListener onLoadMoreListener;
+
+    public void setOnLoadMoreListener(RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener) {
+        this.onLoadMoreListener = onLoadMoreListener;
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                boolean isNotHeader = recyclerView.canScrollVertically(-1);
+                boolean isNotBottom = recyclerView.canScrollVertically(1);
+                Log.e(PokemonAdapter.class.getSimpleName(), "==isNotHeader==" + isNotHeader + "==isNotBottom==" + isNotBottom);
+                if (!isNotBottom) {
+                    Log.e(PokemonAdapter.class.getSimpleName(), "====load more===");
+                    if (onLoadMoreListener != null) {
+                        onLoadMoreListener.onLoadMore();
+                    }
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
     }
 }
