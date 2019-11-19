@@ -1,7 +1,6 @@
 package com.jeanboy.app.pokemonlayout;
 
 import android.annotation.SuppressLint;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.LayoutRes;
@@ -9,10 +8,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jeanboy.app.pokemonlayout.base.BaseViewHolder;
+import com.jeanboy.app.pokemonlayout.base.PokemonLayout;
 import com.jeanboy.app.pokemonlayout.base.RecyclerViewBaseAdapter;
 import com.jeanboy.app.pokemonlayout.constants.ViewState;
 import com.jeanboy.app.pokemonlayout.constants.ViewType;
-import com.jeanboy.app.pokemonlayout.base.PokemonLayout;
 import com.jeanboy.app.pokemonlayout.helper.RecyclerViewHelper;
 import com.jeanboy.app.pokemonlayout.listener.OnLoadListener;
 

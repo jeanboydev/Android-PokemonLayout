@@ -13,8 +13,6 @@ import com.jeanboy.app.pokemonlayout.layout.FooterLayout;
 import com.jeanboy.app.pokemonlayout.layout.HeaderLayout;
 import com.jeanboy.app.pokemonlayout.layout.MaskLayout;
 import com.jeanboy.app.pokemonlayout.listener.OnLoadListener;
-import com.jeanboy.app.pokemonlayout.listener.OnLoadMoreListener;
-import com.jeanboy.app.pokemonlayout.listener.OnRefreshListener;
 
 import java.util.ArrayList;
 import java.util.List;
