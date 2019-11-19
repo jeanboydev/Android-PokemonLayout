@@ -9,6 +9,10 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jeanboy.app.pokemonlayout.layout.FooterLayout;
+import com.jeanboy.app.pokemonlayout.layout.HeaderLayout;
+import com.jeanboy.app.pokemonlayout.layout.MaskLayout;
+import com.jeanboy.app.pokemonlayout.listener.OnLoadListener;
 import com.jeanboy.app.pokemonlayout.listener.OnLoadMoreListener;
 import com.jeanboy.app.pokemonlayout.listener.OnRefreshListener;
 
@@ -33,17 +37,20 @@ public class MainActivity extends AppCompatActivity {
 
         rv_container = findViewById(R.id.rv_container);
         testAdapter = new TestAdapter(dataList);
-        testAdapter.setOnRefreshListener(new OnRefreshListener() {
+        testAdapter.setHeaderLayout(new HeaderLayout());
+        testAdapter.setFooterLayout(new FooterLayout());
+        testAdapter.setMaskLayout(new MaskLayout());
+        testAdapter.setOnRefreshListener(new OnLoadListener() {
             @Override
-            public void onRefresh() {
+            public void onLoad() {
                 currentPage = 1;
                 refreshData();
             }
         });
-        testAdapter.setOnLoadMoreListener(rv_container, new OnLoadMoreListener() {
 
+        testAdapter.setOnLoadMoreListener(rv_container, new OnLoadListener() {
             @Override
-            public void onLoadMore() {
+            public void onLoad() {
                 loadData();
             }
         });
